@@ -38,7 +38,7 @@ cd your-repo-name
 It’s a good practice to use a virtual environment for this project:
 ```bash
 python3 -m venv venv
-source venv/bin/activate  # For Windows: venv\Scripts\activate
+venv\Scripts\activate
 ```
 
 ### Step 3: Install Dependencies
@@ -53,7 +53,6 @@ streamlit
 transformers
 torch
 Pillow
-opencv-python
 ```
 
 ### Step 4: Run the App
@@ -91,20 +90,6 @@ If you want to capture an image directly from your webcam, follow these steps:
 1. In the sidebar, select **Capture Image**.
 2. Click the button "Capture Image from Webcam".
 3. The app will access your webcam, capture the image, and use it for object detection and captioning.
-
----
-
-## Project Structure
-
-```bash
-.
-├── app.py                 # Main Streamlit application file
-├── requirements.txt       # Python dependencies
-├── .github                # GitHub Actions CI/CD workflows
-│   └── workflows
-│       └── ci-cd.yml     # GitHub Actions workflow for deploying to Streamlit Cloud
-└── README.md              # Detailed project instructions
-```
 
 ---
 
@@ -164,23 +149,3 @@ To deploy the app to Streamlit Cloud:
 3. Add your **Streamlit API Key** to your GitHub repository's secrets under `Settings > Secrets > Actions > New repository secret` with the key `STREAMLIT_API_KEY`.
 
 Once configured, every change pushed to the `main` branch will trigger an automatic build and deploy process.
-
----
-
-## Troubleshooting
-
-- **Webcam Access Issue**: Ensure your browser or system allows access to the webcam if you're using the real-time image capture feature.
-- **Streamlit Deployment Issues**: If Streamlit fails to deploy, check the logs in the GitHub Actions tab of your repository to identify any issues.
-- **Model Loading Error**: Ensure you have an active internet connection, as the models will be downloaded from Hugging Face the first time you run the app.
-
----
-
-## Learning Outcomes
-
-By completing this project, you will:
-- Gain experience using **pre-trained models** for object detection and image captioning.
-- Learn how to build and deploy a **Streamlit web application**.
-- Understand how to implement **CI/CD pipelines** using **GitHub Actions**.
-- Work with **real-time webcam input** for image processing tasks.
-
----
