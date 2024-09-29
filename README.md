@@ -56,7 +56,6 @@ torch
 Pillow
 gTTS
 sentencepiece
-os
 timm
 ```
 
