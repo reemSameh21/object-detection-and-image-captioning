@@ -8,18 +8,15 @@ import base64
 import os
 
 
-# Load Hugging Face models with trust_remote_code to avoid warnings
-@st.cache_resource
+# Load Hugging Face models without caching to avoid memory limitations
 def load_object_detector():
     return pipeline("object-detection", model="facebook/detr-resnet-50", trust_remote_code=True)
 
 
-@st.cache_resource
 def load_caption_generator():
     return pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning", trust_remote_code=True)
 
 
-@st.cache_resource
 def load_translator(target_language):
     return pipeline("translation", model=f"Helsinki-NLP/opus-mt-en-{target_language}", trust_remote_code=True)
 
