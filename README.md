@@ -102,7 +102,7 @@ This project is set up for continuous integration and continuous deployment (CI/
 ### GitHub Actions Workflow
 The CI/CD process is automated using the following workflow:
 
-`.github/workflows/deploy.yml`:
+`.github/workflows/ci-cd.yml`:
 ```yaml
 name: Object Detection and Image Captioning
 
