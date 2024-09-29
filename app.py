@@ -1,7 +1,6 @@
 import streamlit as st
 from PIL import Image
 from transformers import pipeline
-import cv2
 import torch
 import gc
 
@@ -32,23 +31,12 @@ def generate_caption(image):
     gc.collect()  # Free memory
     return caption
 
-def capture_image():
-    cap = cv2.VideoCapture(0)
-    ret, frame = cap.read()
-    cap.release()
-    if ret:
-        img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        return Image.fromarray(img_rgb)
-    else:
-        st.error("Failed to capture image from webcam.")
-        return None
-
 def resize_image(image, max_size=512):
     width, height = image.size
     if max(width, height) > max_size:
         scaling_factor = max_size / float(max(width, height))
         new_size = (int(width * scaling_factor), int(height * scaling_factor))
-        return image.resize(new_size, Image.Resampling.LANCZOS)
+        return image.resize(new_size)
     return image
 
 # Streamlit app
@@ -68,8 +56,13 @@ if input_type == "Upload Image":
             st.error(f"Error loading image: {e}")
 
 if input_type == "Capture Image":
-    if st.button("Capture Image from Webcam"):
-        uploaded_image = capture_image()
+    # Use Streamlit's camera_input for webcam capture
+    captured_image = st.camera_input("Capture an image using your webcam")
+    if captured_image is not None:
+        try:
+            uploaded_image = Image.open(captured_image)
+        except Exception as e:
+            st.error(f"Error capturing image: {e}")
 
 if uploaded_image is not None:
     resized_image = resize_image(uploaded_image)
