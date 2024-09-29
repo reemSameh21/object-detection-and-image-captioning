@@ -9,40 +9,34 @@ import os
 
 
 # Load Hugging Face models with trust_remote_code to avoid warnings
-@st.cache_resource  # Cache models to avoid reloading
+@st.cache_resource
 def load_object_detector():
     return pipeline("object-detection", model="facebook/detr-resnet-50", trust_remote_code=True)
 
 
-@st.cache_resource  # Cache models to avoid reloading
+@st.cache_resource
 def load_caption_generator():
     return pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning", trust_remote_code=True)
 
 
-@st.cache_resource  # Cache models to avoid reloading
+@st.cache_resource
 def load_translator(target_language):
     return pipeline("translation", model=f"Helsinki-NLP/opus-mt-en-{target_language}", trust_remote_code=True)
 
 
-object_detector = load_object_detector()
-caption_generator = load_caption_generator()
-
-
 # Disable gradients to save memory
 @torch.no_grad()
-def detect_objects(image, threshold=0.5):
+def detect_objects(image, object_detector, threshold=0.5):
     image = image.convert("RGB")
     objects = object_detector(image)
     filtered_objects = [obj for obj in objects if obj['score'] >= threshold]  # Filter by threshold
-    gc.collect()  # Free memory
     return filtered_objects
 
 
 @torch.no_grad()
-def generate_caption(image):
+def generate_caption(image, caption_generator):
     image = image.convert("RGB")
     caption = caption_generator(image)[0]['generated_text']
-    gc.collect()  # Free memory
     return caption
 
 
@@ -67,7 +61,13 @@ def text_to_speech(text, language):
 def translate_text(text, target_language_code):
     if target_language_code == 'en':
         return text  # No translation needed for English
-    translator = load_translator(target_language_code)
+    elif target_language_code == 'ar':
+        # Use a specific translation model for English to Arabic
+        translator = pipeline("translation", model="Helsinki-NLP/opus-mt-en-ar", trust_remote_code=True)
+    else:
+        # Use a general translation model for other languages
+        translator = load_translator(target_language_code)
+
     translated_text = translator(text)[0]['translation_text']
     return translated_text
 
@@ -111,7 +111,7 @@ if input_type == "Capture Image":
             st.error(f"Error capturing image: {e}")
 
 if uploaded_image is not None:
-    resized_image = uploaded_image.resize((512, 512))
+    resized_image = uploaded_image.resize((512, 512))  # Resize early to save memory
     st.image(resized_image, caption="Uploaded/Captured Image (Resized)", use_column_width=True)
 
     # Object Detection Confidence Threshold
@@ -120,7 +120,8 @@ if uploaded_image is not None:
     # Object Detection
     with st.spinner("Detecting objects..."):
         try:
-            objects = detect_objects(resized_image, threshold=confidence_threshold)
+            object_detector = load_object_detector()  # Load the detector here
+            objects = detect_objects(resized_image, object_detector, threshold=confidence_threshold)
             st.write("Objects detected:")
             translated_labels = []
             for obj in objects:
@@ -133,7 +134,8 @@ if uploaded_image is not None:
     # Image Captioning and Translation
     with st.spinner("Generating and translating caption..."):
         try:
-            caption = generate_caption(resized_image)
+            caption_generator = load_caption_generator()  # Load the caption generator here
+            caption = generate_caption(resized_image, caption_generator)
             translated_caption = translate_text(caption, selected_language_code)
             st.write(f"Image Caption in {selected_language}: {translated_caption}")
             # Convert caption to speech and provide download link
@@ -142,3 +144,6 @@ if uploaded_image is not None:
             st.error(f"Error in caption generation or translation: {e}")
 else:
     st.warning("Please upload an image or capture one from the webcam to get started.")
+
+# Call garbage collection at the end to free up memory
+gc.collect()
