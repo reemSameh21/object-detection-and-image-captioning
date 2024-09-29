@@ -5,22 +5,28 @@ import torch
 import gc
 from gtts import gTTS  # Text-to-Speech library
 import base64
+import os
+
 
 # Load Hugging Face models with trust_remote_code to avoid warnings
 @st.cache_resource  # Cache models to avoid reloading
 def load_object_detector():
     return pipeline("object-detection", model="facebook/detr-resnet-50", trust_remote_code=True)
 
+
 @st.cache_resource  # Cache models to avoid reloading
 def load_caption_generator():
     return pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning", trust_remote_code=True)
+
 
 @st.cache_resource  # Cache models to avoid reloading
 def load_translator(target_language):
     return pipeline("translation", model=f"Helsinki-NLP/opus-mt-en-{target_language}", trust_remote_code=True)
 
+
 object_detector = load_object_detector()
 caption_generator = load_caption_generator()
+
 
 # Disable gradients to save memory
 @torch.no_grad()
@@ -31,6 +37,7 @@ def detect_objects(image, threshold=0.5):
     gc.collect()  # Free memory
     return filtered_objects
 
+
 @torch.no_grad()
 def generate_caption(image):
     image = image.convert("RGB")
@@ -38,23 +45,32 @@ def generate_caption(image):
     gc.collect()  # Free memory
     return caption
 
+
 # Function to convert text to speech and return a download link
 def text_to_speech(text, language):
     tts = gTTS(text, lang=language)
-    tts.save("caption.mp3")
-    with open("caption.mp3", "rb") as audio_file:
+    audio_file_path = "caption.mp3"
+    tts.save(audio_file_path)
+
+    # Load and encode the audio file
+    with open(audio_file_path, "rb") as audio_file:
         audio_bytes = audio_file.read()
         audio_base64 = base64.b64encode(audio_bytes).decode()
         audio_link = f'<a href="data:audio/mp3;base64,{audio_base64}" download="caption.mp3">Download Caption as MP3</a>'
-        return audio_link
 
-# Function to translate the caption based on user-selected language
-def translate_caption(caption, target_language):
-    if target_language == 'en':
-        return caption  # No translation needed for English
-    translator = load_translator(target_language)
-    translated_caption = translator(caption)[0]['translation_text']
-    return translated_caption
+    # Remove the audio file after reading
+    os.remove(audio_file_path)
+    return audio_link
+
+
+# Function to translate the caption and object detection labels
+def translate_text(text, target_language_code):
+    if target_language_code == 'en':
+        return text  # No translation needed for English
+    translator = load_translator(target_language_code)
+    translated_text = translator(text)[0]['translation_text']
+    return translated_text
+
 
 # Streamlit app
 st.title("Multilingual Object Detection and Image Captioning App")
@@ -106,8 +122,11 @@ if uploaded_image is not None:
         try:
             objects = detect_objects(resized_image, threshold=confidence_threshold)
             st.write("Objects detected:")
+            translated_labels = []
             for obj in objects:
-                st.write(f"- {obj['label']} with confidence {obj['score']:.2f}")
+                translated_label = translate_text(obj['label'], selected_language_code)
+                translated_labels.append(translated_label)
+                st.write(f"- {translated_label} with confidence {obj['score']:.2f}")
         except Exception as e:
             st.error(f"Error in object detection: {e}")
 
@@ -115,7 +134,7 @@ if uploaded_image is not None:
     with st.spinner("Generating and translating caption..."):
         try:
             caption = generate_caption(resized_image)
-            translated_caption = translate_caption(caption, selected_language_code)
+            translated_caption = translate_text(caption, selected_language_code)
             st.write(f"Image Caption in {selected_language}: {translated_caption}")
             # Convert caption to speech and provide download link
             st.markdown(text_to_speech(translated_caption, selected_language_code), unsafe_allow_html=True)

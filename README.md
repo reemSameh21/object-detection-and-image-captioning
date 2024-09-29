@@ -55,6 +55,9 @@ transformers
 torch
 Pillow
 gTTS
+sentencepiece
+os
+timm
 ```
 
 ### Step 4: Run the App
