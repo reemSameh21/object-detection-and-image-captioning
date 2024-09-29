@@ -2,19 +2,35 @@ import streamlit as st
 from PIL import Image
 from transformers import pipeline
 import cv2
-import numpy as np
+import torch
+import gc
 
 # Load Hugging Face models with trust_remote_code to avoid warnings
-object_detector = pipeline("object-detection", model="facebook/detr-resnet-50", trust_remote_code=True)
-caption_generator = pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning", trust_remote_code=True)
+@st.cache_resource  # Cache models to avoid reloading
+def load_object_detector():
+    return pipeline("object-detection", model="facebook/detr-resnet-50", trust_remote_code=True)
 
+@st.cache_resource  # Cache models to avoid reloading
+def load_caption_generator():
+    return pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning", trust_remote_code=True)
+
+object_detector = load_object_detector()
+caption_generator = load_caption_generator()
+
+# Disable gradients to save memory
+@torch.no_grad()
 def detect_objects(image):
     image = image.convert("RGB")
-    return object_detector(image)
+    objects = object_detector(image)
+    gc.collect()  # Free memory
+    return objects
 
+@torch.no_grad()
 def generate_caption(image):
     image = image.convert("RGB")
-    return caption_generator(image)[0]['generated_text']
+    caption = caption_generator(image)[0]['generated_text']
+    gc.collect()  # Free memory
+    return caption
 
 def capture_image():
     cap = cv2.VideoCapture(0)
