@@ -48,7 +48,7 @@ def resize_image(image, max_size=512):
     if max(width, height) > max_size:
         scaling_factor = max_size / float(max(width, height))
         new_size = (int(width * scaling_factor), int(height * scaling_factor))
-        return image.resize(new_size, Image.ANTIALIAS)
+        return image.resize(new_size, Image.Resampling.LANCZOS)
     return image
 
 # Streamlit app
