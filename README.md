@@ -1,19 +1,20 @@
-
-# Object Detection and Image Captioning Web App
+# Object Detection, Image Captioning, and Multilingual Text-to-Speech Web App
 
 ## Overview
 
-This project is a web application that uses pre-trained models from Hugging Face to perform **object detection** and **image captioning** on user-uploaded images or images captured in real-time via webcam. The application is built using **Streamlit** and is deployed using **Streamlit Cloud**. Continuous integration and deployment (CI/CD) are managed via **GitHub Actions**.
+This project is a web application that uses pre-trained models from Hugging Face to perform **object detection** and **image captioning** on user-uploaded images or images captured in real-time via webcam. Additionally, it supports **multilingual caption generation** and **text-to-speech (TTS)** functionality, allowing users to hear the captions in their preferred language. The application is built using **Streamlit** and is deployed using **Streamlit Cloud**. Continuous integration and deployment (CI/CD) are managed via **GitHub Actions**.
 
 ### Key Features:
 - **Object Detection**: Automatically detect objects in images using Hugging Face's `facebook/detr-resnet-50` model.
 - **Image Captioning**: Generate descriptive captions for images using Hugging Face's `nlpconnect/vit-gpt2-image-captioning` model.
+- **Multilingual Support for Captions**: Users can select a language for the generated image captions, with automatic translation into their preferred language.
+- **Text-to-Speech (TTS)**: Listen to the captions using text-to-speech functionality in the selected language.
 - **Real-time Image Capture**: Capture images directly from the webcam for analysis.
 - **Easy-to-use Interface**: Upload or capture images via the interactive web interface.
 
 ## Tech Stack
 - **Frontend**: Streamlit (Python framework for building web apps)
-- **Backend**: Hugging Face pre-trained models for object detection and image captioning
+- **Backend**: Hugging Face pre-trained models for object detection and image captioning, Google Text-to-Speech (gTTS) for TTS
 - **CI/CD**: GitHub Actions
 - **Deployment**: Streamlit Cloud
 
@@ -30,7 +31,7 @@ Before starting, ensure that you have the following installed on your machine:
 ### Step 1: Clone the Repository
 To get started, clone the repository to your local machine:
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
+git clone https://github.com/<your-username>/<your-repo-name>.git
 cd your-repo-name
 ```
 
@@ -53,6 +54,7 @@ streamlit
 transformers
 torch
 Pillow
+gTTS
 ```
 
 ### Step 4: Run the App
@@ -83,6 +85,14 @@ http://localhost:8501
 - A descriptive caption for the image is generated using the pre-trained `nlpconnect/vit-gpt2-image-captioning` model.
 - The caption is displayed below the detected objects.
 
+### Multilingual Captioning
+- You can select your preferred language for the image caption from the available language options (e.g., English, Spanish, French, etc.).
+- The caption will be translated automatically using Hugging Face's translation models and displayed in the selected language.
+
+### Text-to-Speech (TTS)
+- After the caption is generated, you can listen to it in the selected language using the **text-to-speech (TTS)** feature.
+- The app uses Google Text-to-Speech (gTTS) to convert the caption into speech and play it back to you.
+
 ---
 
 ## Real-Time Image Capture
@@ -96,7 +106,7 @@ If you want to capture an image directly from your webcam, follow these steps:
 ## CI/CD Pipeline with GitHub Actions
 
 This project is set up for continuous integration and continuous deployment (CI/CD) using **GitHub Actions**. Each time you push changes to the repository, GitHub Actions will:
-1. **Install dependencies** and run any **tests** (if applicable).
+1. **Install dependencies**.
 2. **Deploy the updated app** to **Streamlit Cloud**.
 
 ### GitHub Actions Workflow
@@ -149,3 +159,5 @@ To deploy the app to Streamlit Cloud:
 3. Add your **Streamlit API Key** to your GitHub repository's secrets under `Settings > Secrets > Actions > New repository secret` with the key `STREAMLIT_API_KEY`.
 
 Once configured, every change pushed to the `main` branch will trigger an automatic build and deploy process.
+
+---
