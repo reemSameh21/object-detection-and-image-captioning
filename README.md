@@ -6,11 +6,13 @@ This project is a web application that uses pre-trained models from Hugging Face
 
 ### Key Features:
 - **Object Detection**: Automatically detect objects in images using Hugging Face's `facebook/detr-resnet-50` model.
+- **Set Object Detection Confidence Threshold**: Users can adjust the confidence threshold for object detection, allowing for more precise control over which detected objects are displayed based on their confidence scores.
 - **Image Captioning**: Generate descriptive captions for images using Hugging Face's `nlpconnect/vit-gpt2-image-captioning` model.
 - **Multilingual Support for Captions**: Users can select a language for the generated image captions, with automatic translation into their preferred language.
 - **Text-to-Speech (TTS)**: Listen to the captions using text-to-speech functionality in the selected language.
 - **Real-time Image Capture**: Capture images directly from the webcam for analysis.
 - **Easy-to-use Interface**: Upload or capture images via the interactive web interface.
+- **Automatic Image Caption Translation**: The app automatically translates generated captions into the user's selected language, ensuring accessibility and inclusivity.
 
 ## Tech Stack
 - **Frontend**: Streamlit (Python framework for building web apps)
