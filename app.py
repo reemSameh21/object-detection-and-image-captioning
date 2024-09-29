@@ -16,8 +16,8 @@ def load_caption_generator():
     return pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning", trust_remote_code=True)
 
 @st.cache_resource  # Cache models to avoid reloading
-def load_translator():
-    return pipeline("translation", model="Helsinki-NLP/opus-mt-en-{lang}")
+def load_translator(target_language):
+    return pipeline("translation", model=f"Helsinki-NLP/opus-mt-en-{target_language}", trust_remote_code=True)
 
 object_detector = load_object_detector()
 caption_generator = load_caption_generator()
@@ -49,10 +49,10 @@ def text_to_speech(text, language):
         return audio_link
 
 # Function to translate the caption based on user-selected language
-def translate_caption(caption, target_language_code):
-    if target_language_code == 'en':
+def translate_caption(caption, target_language):
+    if target_language == 'en':
         return caption  # No translation needed for English
-    translator = pipeline("translation_en_to_{lang}".format(lang=target_language_code), trust_remote_code=True)
+    translator = load_translator(target_language)
     translated_caption = translator(caption)[0]['translation_text']
     return translated_caption
 
